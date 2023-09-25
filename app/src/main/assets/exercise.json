@@ -1,0 +1,44 @@
+{
+  "exercises": [
+    {
+      "name": "Exercise 1",
+      "data": {
+        "field1": "value1",
+        "field2": "value2",
+        "field3": "value3",
+        "field4": "value4",
+        "field5": "value5"
+      }
+    },
+    {
+      "name": "Exercise 2",
+      "data": {
+        "field1": "value1",
+        "field2": "value2",
+        "field3": "value3",
+        "field4": "value4",
+        "field5": "value5",
+        "field6": "value6",
+        "field7": "value7",
+        "field8": "value8",
+        "field9": "value9",
+        "field10": "value10"
+      }
+    },
+    {
+      "name": "Exercise 3",
+      "data": {
+        "minRatioOfRUpperAndLower": "1.85",
+        "maxRatioOfRUpperAndLower": "2.05",
+
+        "idealRatioOfRUpperAndLower": "2.1",
+
+        "minRatioOfWristsAndShoulders": "1.2",
+        "maxRatioOfWristsAndShoulders": "2.4",
+        "maxRatioOfBodyWrist": "0.4",
+        "minRatioOfElbowAndShoulders": "1.1",
+        "maxRatioOfElbowAndShoulders": "1.9"
+      }
+    }
+  ]
+}
