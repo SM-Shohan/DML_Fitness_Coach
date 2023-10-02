@@ -2,6 +2,7 @@ package com.deepmindslab.movenet.posture
 
 import com.deepmindslab.movenet.data.ExerciseData
 import com.deepmindslab.movenet.data.Person
+import com.deepmindslab.movenet.exercise_data.Exercise3Data
 import com.deepmindslab.movenet.ratio.RatioTrackerUtils
 import kotlin.math.abs
 import kotlin.math.sqrt
@@ -9,12 +10,12 @@ import kotlin.math.sqrt
 class PostureUtils {
 
     companion object{
-        fun postureExercise3(person: Person):Boolean{
+        fun postureExercise3(person: Person, exercise3Data: Exercise3Data):Boolean{
             var ratioOfWristsAndShouldersRight=false
             var ratioOfBodyWristRight= false
             var ratioOfElbowAndShouldersRight=false
             val ratioOfWristsAndShoulders=RatioTrackerUtils.calculateRatio(person,Pair(9,10),Pair(5,6))
-            if (ratioOfWristsAndShoulders>1.2 && ratioOfWristsAndShoulders<2.4){
+            if (ratioOfWristsAndShoulders>exercise3Data.minRatioOfWristsAndShoulders && ratioOfWristsAndShoulders<exercise3Data.maxRatioOfWristsAndShoulders){
                 ratioOfWristsAndShouldersRight=true
             }
 
@@ -34,12 +35,12 @@ class PostureUtils {
             val difY1= abs(rightShoulderY-rightWristY)
             val distance2= sqrt(difX1*difX1+difY1*difY1)
             val ratioOfBodyWrist=distance2/distance1
-            if (ratioOfBodyWrist<0.4){
+            if (ratioOfBodyWrist<exercise3Data.maxRatioOfBodyWrist){
                 ratioOfBodyWristRight=true
             }
 
             val ratioOfElbowAndShoulders=RatioTrackerUtils.calculateRatio(person,Pair(7,8),Pair(5,6))
-            if (ratioOfElbowAndShoulders>1.1 && ratioOfElbowAndShoulders < 1.9){
+            if (ratioOfElbowAndShoulders>exercise3Data.minRatioOfElbowAndShoulders && ratioOfElbowAndShoulders < exercise3Data.maxRatioOfElbowAndShoulders){
                 ratioOfElbowAndShouldersRight=true
             }
 

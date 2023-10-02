@@ -1,5 +1,6 @@
 package com.deepmindslab.movenet
 
+import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
@@ -10,13 +11,14 @@ import android.graphics.RectF
 import android.graphics.Typeface
 import com.deepmindslab.movenet.accuracy.ExerciseAccuracyUtils
 import com.deepmindslab.movenet.angle.AnglesTrackerUtils
-import com.deepmindslab.movenet.camera.CameraSource
 import com.deepmindslab.movenet.data.BodyPart
 import com.deepmindslab.movenet.resultdata.Exercise3ResultData
 import com.deepmindslab.movenet.data.Person
 import com.deepmindslab.movenet.data.ExerciseData
 import com.deepmindslab.movenet.exercise.ExerciseUtils
+import com.deepmindslab.movenet.exercise_data.Exercise2Data
 import com.deepmindslab.movenet.exercise_data.Exercise3Data
+import com.deepmindslab.movenet.exercise_data.ExerciseDataInterface
 import com.deepmindslab.movenet.exercise_validitty.ExerciseValidityUtils
 import com.deepmindslab.movenet.posture.PostureUtils
 import com.deepmindslab.movenet.standing.StandingUtils
@@ -131,11 +133,11 @@ object VisualizationUtils {
 
     }
 
+    @SuppressLint("SuspiciousIndentation")
     private fun drawExerciseDetails(canvas: Canvas, drawLineColorGreen: Boolean, paintText:Paint) {
-        val textHeight = paintText.textSize
         val screenWidth = canvas.width
         val screenHeight = canvas.height
-
+        val textHeight = paintText.textSize
         val centerY = (screenHeight + textHeight)/2
             if (drawLineColorGreen) {
                 val textWidth = paintText.measureText(ExerciseData.exerciseCounter.toString())
@@ -182,11 +184,11 @@ object VisualizationUtils {
         input: Bitmap,
         persons: List<Person>,
         isTrackerEnabled: Boolean = false,
-        exerciseData: Exercise3Data?,
+        exerciseData: ExerciseDataInterface?,
         exercise3ResultData: Exercise3ResultData,
     ): Bitmap {
 
-
+        val sortPersons = persons.sortedBy { it.keyPoints.firstOrNull()?.coordinate?.x ?: 0f }
 
         val paintSector = Paint().apply {
             color = Color.GREEN // Choose your desired color
@@ -194,12 +196,12 @@ object VisualizationUtils {
         }
 
 
-        val paintCircle = Paint().apply {
+        Paint().apply {
             strokeWidth = CIRCLE_RADIUS
             color = Color.RED
             style = Paint.Style.FILL
         }
-        val paintCircleGreen = Paint().apply {
+        Paint().apply {
             strokeWidth = CIRCLE_RADIUS
             color = Color.GREEN
             style = Paint.Style.FILL
@@ -242,197 +244,134 @@ object VisualizationUtils {
         val screenHeight = originalSizeCanvas.height
 
 
-        persons.forEach { person ->
+        sortPersons.forEach { person ->
+            if (person == sortPersons[0]) {
+                // draw person id if tracker is enable
+                if (isTrackerEnabled) {
+                    person.boundingBox?.let {
+                        val personIdX = max(0f, it.left)
+                        val personIdY = max(0f, it.top)
 
-            // draw person id if tracker is enable
-            if (isTrackerEnabled) {
-                person.boundingBox?.let {
-                    val personIdX = max(0f, it.left)
-                    val personIdY = max(0f, it.top)
-
-                    originalSizeCanvas.drawText(
-                        person.id.toString(),
-                        personIdX,
-                        personIdY - PERSON_ID_MARGIN,
-                        paintText
-                    )
-                    originalSizeCanvas.drawRect(it, paintLine)
-                }
-            }
-
-
-
-            val textWidth = paintText2.measureText(ExerciseData.exercise1Counter.toString())
-            val textHeight = paintText2.textSize
-
-            val centerX = (screenWidth - textWidth) / 2
-            val centerY = (screenHeight + textHeight) / 2
-            if (exerciseData?.exerciseName=="exercise1") {
-                if (StandingUtils.standingPosition(person)==3){
-                    if (ExerciseValidityUtils.exercise1Validity(person)){
-                        ExerciseUtils.countExercise1Movement(person)
-                        if (ExerciseData.exercise1Counter==0) {
-                            originalSizeCanvas.drawText("Start Exercise",
-                                centerX,centerY,paintText2)
-                        }else {
-                            originalSizeCanvas.drawText(
-                                ExerciseData.exercise1Counter.toString(),
-                                centerX,
-                                centerY,
-                                paintText2
-                            )
-                        }
-                    }else{
-                        originalSizeCanvas.drawText(ExerciseData.errorMessage,centerX, centerY,paintText3)
+                        originalSizeCanvas.drawText(
+                            person.id.toString(),
+                            personIdX,
+                            personIdY - PERSON_ID_MARGIN,
+                            paintText
+                        )
+                        originalSizeCanvas.drawRect(it, paintLine)
                     }
                 }
-                else{
-                    originalSizeCanvas.drawText("Stand font facing",
-                        centerX,centerY,paintText2)
-                }
-            }
-            else if (exerciseData?.exerciseName=="exercise2")
-            {
-
-                val drawLineColorGreen: Boolean
 
 
-                if (StandingUtils.standingPosition(person)==1){
-                    if (ExerciseValidityUtils.exercise2Validity(person)){
-                        ExerciseUtils.countExercise2Movement(person)
-                        drawLineColorGreen=true
-                        if (ExerciseData.exercise2Counter==0){
-                            originalSizeCanvas.drawText("Start Exercise",
-                                centerX,centerY,paintText2)
-                        }else {
-                            if (ExerciseData.exercise2Counter>1 && (ExerciseData.exerciseTime>5000L || ExerciseData.exerciseTime<1000L )){
+                val textWidth = paintText2.measureText(ExerciseData.exercise1Counter.toString())
+                val textHeight = paintText2.textSize
+
+                val centerX = (screenWidth - textWidth) / 2
+                val centerY = (screenHeight + textHeight) / 2
+                if (exerciseData == null) {
+                    if (StandingUtils.standingPosition(person) == 3) {
+                        if (ExerciseValidityUtils.exercise1Validity(person)) {
+                            ExerciseUtils.countExercise1Movement(person)
+                            if (ExerciseData.exercise1Counter == 0) {
                                 originalSizeCanvas.drawText(
-                                    "Too slow/fast",
-                                    centerX,
-                                    centerY,
-                                    paintText2
+                                    "Start Exercise",
+                                    centerX, centerY, paintText2
                                 )
-                                }else{
+                            } else {
                                 originalSizeCanvas.drawText(
-                                    ExerciseData.exercise2Counter.toString(),
+                                    ExerciseData.exercise1Counter.toString(),
                                     centerX,
                                     centerY,
                                     paintText2
                                 )
                             }
+                        } else {
                             originalSizeCanvas.drawText(
-                                ExerciseData.exercise2Counter.toString(),
+                                ExerciseData.errorMessage,
                                 centerX,
                                 centerY,
-                                paintText2
+                                paintText3
                             )
                         }
+                    } else {
+                        originalSizeCanvas.drawText(
+                            "Stand font facing",
+                            centerX, centerY, paintText2
+                        )
                     }
-                    else{
-                        drawLineColorGreen=false
-                        originalSizeCanvas.drawText(ExerciseData.errorMessage,centerX, centerY,paintText2)
-                    }
-
-                }
-                else {
-                    drawLineColorGreen=false
-                    originalSizeCanvas.drawText("Stand left facing",
-                        centerX,centerY,paintText2)
-                }
-
-
-                bodyJoints.forEach {
-                    val pointA = person.keyPoints[it.first.position].coordinate
-                    val pointB = person.keyPoints[it.second.position].coordinate
-                    if (person.keyPoints[it.first.position].score>0.25 && person.keyPoints[it.second.position].score>0.25)
-                    {
-                        if (/*((it.first.position==5 && it.second.position==7) || (it.first.position==7 && it.second.position==9))&& */ drawLineColorGreen ){
-                            originalSizeCanvas.drawLine(
-                                pointA.x,
-                                pointA.y,
-                                pointB.x,
-                                pointB.y,
-                                paintLineGreen
-                            )
-                        }else {
-                            originalSizeCanvas.drawLine(
-                                pointA.x,
-                                pointA.y,
-                                pointB.x,
-                                pointB.y,
-                                paintLine
-                            )
-
-                        }
-                    }
-
-                }
-                if (drawLineColorGreen) {
-                    val path = drawAngle(
-                        person.keyPoints[7].coordinate,
-                        person.keyPoints[9].coordinate,
-                        person.keyPoints[5].coordinate
-                    )
-                    originalSizeCanvas.drawPath(path, paintSector)
-                }
-
-
-                person.keyPoints.forEach { point ->
-                    if (point.score>0.25) {
-                        if (/*(point.bodyPart.position==5 || point.bodyPart.position==7 || point.bodyPart.position==9) && */ drawLineColorGreen){
-                            originalSizeCanvas.drawCircle(
-                                point.coordinate.x,
-                                point.coordinate.y,
-                                CIRCLE_RADIUS,
-                                paintCircleGreen
-                            )
-                        }else{
-                            originalSizeCanvas.drawCircle(
-                                point.coordinate.x,
-                                point.coordinate.y,
-                                CIRCLE_RADIUS,
-                                paintCircle
-                            )
+                } else if (exerciseData is Exercise2Data) {
+                    var drawLineColorGreen: Boolean
+                    if (StandingUtils.standingPosition(person) == 1) {
+                        if (ExerciseValidityUtils.exercise2Validity(person)) {
+                            ExerciseUtils.trackExercise2(person)
+                            drawLineColorGreen = true
+                            if (ExerciseData.exercise2Counter > 1 && (ExerciseData.exerciseTime > 5000L || ExerciseData.exerciseTime < 1000L)) {
+                                ExerciseData.errorMessage = "Too slow or fast"
+                                drawLineColorGreen = false
+                            }
+                        } else {
+                            drawLineColorGreen = false
                         }
 
+                    } else {
+                        drawLineColorGreen = false
+                        ExerciseData.errorMessage = "Stand left facing"
                     }
+                    drawExerciseDetails(originalSizeCanvas, drawLineColorGreen, paintText2)
+                    drawLine(originalSizeCanvas, person, drawLineColorGreen)
+                    if (drawLineColorGreen) {
+                        val path = drawAngle(
+                            person.keyPoints[7].coordinate,
+                            person.keyPoints[9].coordinate,
+                            person.keyPoints[5].coordinate
+                        )
+                        originalSizeCanvas.drawPath(path, paintSector)
+                    }
+                    drawKeyPoints(originalSizeCanvas, person, drawLineColorGreen)
 
+                } else if (exerciseData is Exercise3Data) {
+                    val drawLineColorGreen: Boolean
+                    if (StandingUtils.standingPosition(person) == 3) {
+                        if (PostureUtils.postureExercise3(person, exerciseData)) {
+                            if (ExerciseValidityUtils.exercise3Validity(person)) {
+                                ExerciseUtils.trackExercise3(
+                                    person,
+                                    exerciseData,
+                                    exercise3ResultData
+                                )
+                                drawLineColorGreen = true
+                                drawExerciseDetails(originalSizeCanvas, true, paintText2)
+                                drawAccuracy(
+                                    originalSizeCanvas,
+                                    ExerciseAccuracyUtils.calculateAccuracy(
+                                        person,
+                                        exercise3ResultData
+                                    ),
+                                    paintText2
+                                )
+
+                            } else {
+                                drawExerciseDetails(originalSizeCanvas, false, paintText2)
+                                drawLineColorGreen = false
+                            }
+                        } else {
+                            drawExerciseDetails(originalSizeCanvas, false, paintText2)
+                            drawLineColorGreen = false
+                        }
+                    } else {
+                        ExerciseData.errorMessage = "Stand Front facing"
+                        drawExerciseDetails(originalSizeCanvas, false, paintText2)
+                        drawLineColorGreen = false
+                    }
+                    drawKeyPoints(originalSizeCanvas, person, drawLineColorGreen)
+                    drawLine(originalSizeCanvas, person, drawLineColorGreen)
                 }
 
 
+            }else{
+                drawKeyPoints(originalSizeCanvas,person,false)
+                drawLine(originalSizeCanvas,person,false)
             }
-
-            else if (exerciseData?.exerciseName=="Exercise 3")
-            {
-                val drawLineColorGreen: Boolean
-                if (StandingUtils.standingPosition(person)==3){
-                    if (PostureUtils.postureExercise3(person)){
-                        if (ExerciseValidityUtils.exercise3Validity(person)){
-                            ExerciseUtils.trackExercise3(person,exercise3ResultData)
-                            drawLineColorGreen=true
-                            drawExerciseDetails(originalSizeCanvas, true,paintText2)
-                            drawAccuracy(originalSizeCanvas, ExerciseAccuracyUtils.calculateAccuracy(person,exercise3ResultData),paintText2)
-
-                        }
-                        else{
-                            drawExerciseDetails(originalSizeCanvas, false,paintText2)
-                            drawLineColorGreen=false
-                        }
-                    }
-                    else{
-                        drawExerciseDetails(originalSizeCanvas, false,paintText2)
-                        drawLineColorGreen=false
-                    }
-                }else{
-                    ExerciseData.errorMessage="Stand Front facing"
-                    drawExerciseDetails(originalSizeCanvas, false,paintText2)
-                    drawLineColorGreen=false
-                }
-                drawKeyPoints(originalSizeCanvas,person,drawLineColorGreen)
-                drawLine(originalSizeCanvas,person,drawLineColorGreen)
-            }
-
-
         }
         return output
     }

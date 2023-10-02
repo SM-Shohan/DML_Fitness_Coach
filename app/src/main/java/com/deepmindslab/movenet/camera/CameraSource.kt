@@ -14,7 +14,6 @@ import android.hardware.camera2.CameraManager
 import android.media.ImageReader
 import android.os.Handler
 import android.os.HandlerThread
-import android.util.Log
 import android.view.Surface
 import android.view.SurfaceView
 import com.deepmindslab.movenet.ExerciseResultActivity
@@ -24,7 +23,7 @@ import com.deepmindslab.movenet.YuvToRgbConverter
 import com.deepmindslab.movenet.resultdata.Exercise3ResultData
 import com.deepmindslab.movenet.data.ExerciseData
 import com.deepmindslab.movenet.data.Person
-import com.deepmindslab.movenet.exercise_data.Exercise3Data
+import com.deepmindslab.movenet.exercise_data.ExerciseDataInterface
 import com.deepmindslab.movenet.ml.MoveNetMultiPose
 import com.deepmindslab.movenet.ml.PoseClassifier
 import com.deepmindslab.movenet.ml.PoseDetector
@@ -81,7 +80,7 @@ class CameraSource(
     private var cameraId: String = ""
 
     suspend fun initCamera(
-        exerciseData: Exercise3Data?,
+        exerciseData: ExerciseDataInterface?,
         exercise3ResultData: Exercise3ResultData,
         mainActivity: MainActivity,
         cameraSource: CameraSource
@@ -291,7 +290,7 @@ class CameraSource(
     // process image
     private fun processImage(
         bitmap: Bitmap,
-        exerciseData: Exercise3Data?,
+        exerciseData: ExerciseDataInterface?,
         exercise3ResultData: Exercise3ResultData,
         mainActivity: MainActivity,
         cameraSource: CameraSource
@@ -304,6 +303,7 @@ class CameraSource(
                 persons.addAll(it)
 
                 // if the model only returns one item, allow running the Pose classifier.
+
                 if (persons.isNotEmpty()) {
                     classifier?.run {
                         classificationResult = classify(persons[0])
@@ -328,7 +328,7 @@ class CameraSource(
     private fun visualize(
         persons: List<Person>,
         bitmap: Bitmap,
-        exerciseData: Exercise3Data?,
+        exerciseData: ExerciseDataInterface?,
         exercise3ResultData: Exercise3ResultData,
         mainActivity: MainActivity,
         cameraSource: CameraSource
