@@ -4,6 +4,7 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Button
+import com.deepmindslab.movenet.exercise_data.Exercise2Data
 import com.deepmindslab.movenet.exercise_data.Exercise3Data
 import org.json.JSONArray
 import org.json.JSONObject
@@ -41,9 +42,17 @@ class SelectExerciseActivity : AppCompatActivity() {
             startActivity(intent)
         }
         button2.setOnClickListener {
-            val intent = Intent(this,MainActivity::class.java)
-            val exerciseName="exercise2"
-            intent.putExtra("exerciseName",exerciseName)
+            val exercise3Object = exercisesArray.getJSONObject(1)
+            val exercise3JsonData = exercise3Object.getJSONObject("data")
+            val exercise2Data= Exercise2Data(
+                exercise3Object.getString("name"),
+                exercise3JsonData.getString("minAngleRightElbow").toFloat(),
+                exercise3JsonData.getString("maxAngleRightElbow").toFloat(),
+                exercise3JsonData.getString("minFreqInMs").toFloat(),
+                exercise3JsonData.getString("maxFreqInMs").toFloat()
+            )
+            val intent=Intent(this,MainActivity::class.java)
+            intent.putExtra("exercise2Data",exercise2Data)
             startActivity(intent)
         }
         button3.setOnClickListener {
@@ -63,7 +72,7 @@ class SelectExerciseActivity : AppCompatActivity() {
             )
 
             val intent=Intent(this,MainActivity::class.java)
-            intent.putExtra("exerciseData", exercise3Data)
+            intent.putExtra("exercise3Data", exercise3Data)
             startActivity(intent)
         }
     }

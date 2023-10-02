@@ -12,7 +12,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
 import com.deepmindslab.movenet.camera.CameraSource
-import com.deepmindslab.movenet.exercise_data.Exercise3Data
+import com.deepmindslab.movenet.exercise_data.ExerciseDataInterface
 import com.deepmindslab.movenet.resultdata.Exercise3ResultData
 import com.deepmindslab.movenet.ml.ModelType
 import com.deepmindslab.movenet.ml.MoveNet
@@ -37,13 +37,23 @@ class MainActivity : AppCompatActivity() {
     private var cameraSource: CameraSource? = null
     private var isClassifyPose = false
 
+    private var exerciseData: ExerciseDataInterface? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         surfaceView=findViewById(R.id.surfaceView)
 
         val receivedIntent = intent
-        val exerciseData = receivedIntent.getSerializableExtra("exerciseData") as? Exercise3Data
+
+        if (intent.hasExtra("exercise2Data")) {
+            exerciseData = intent.getSerializableExtra("exercise2Data") as ExerciseDataInterface
+        }
+
+        if (intent.hasExtra("exercise3Data")) {
+            exerciseData = intent.getSerializableExtra("exercise3Data") as ExerciseDataInterface
+        }
+
         if (exerciseData!=null){
             openCamera(exerciseData)
         }
@@ -73,7 +83,7 @@ class MainActivity : AppCompatActivity() {
         ) == PackageManager.PERMISSION_GRANTED
     }
 
-    private fun openCamera(exerciseData: Exercise3Data?) {
+    private fun openCamera(exerciseData: ExerciseDataInterface?) {
         val exercise3ResultData= Exercise3ResultData()
 
         if (isCameraPermissionGranted()) {

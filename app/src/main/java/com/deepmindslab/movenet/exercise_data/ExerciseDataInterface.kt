@@ -1,0 +1,3 @@
+package com.deepmindslab.movenet.exercise_data
+
+interface ExerciseDataInterface

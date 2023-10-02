@@ -4,6 +4,7 @@ import com.deepmindslab.movenet.angle.AnglesTrackerUtils
 import com.deepmindslab.movenet.resultdata.Exercise3ResultData
 import com.deepmindslab.movenet.data.Person
 import com.deepmindslab.movenet.data.ExerciseData
+import com.deepmindslab.movenet.exercise_data.Exercise3Data
 import com.deepmindslab.movenet.ratio.RatioTrackerUtils
 
 class ExerciseUtils {
@@ -38,28 +39,28 @@ class ExerciseUtils {
                 }
             }
         }
-        fun countExercise2Movement(person: Person){
-            val angleL: Float =AnglesTrackerUtils.calculateAngle(person, 9,7,5)
+        fun trackExercise2(person: Person){
+            val angleRightEl: Float =AnglesTrackerUtils.calculateAngle(person, 9,7,5)
 
-            if (angleL<60){
+            if (angleRightEl<60){
                 if (!updateUp) {
-                    ExerciseData.exercise2Counter++
-                    if (ExerciseData.exercise2Counter==1){
+                    ExerciseData.exerciseCounter++
+                    if (ExerciseData.exerciseCounter==1){
                         ExerciseData.exerciseStartTime=System.currentTimeMillis()
                     }
-                    else if(ExerciseData.exercise2Counter>1){
+                    else if(ExerciseData.exerciseCounter>1){
                         ExerciseData.exerciseEndTime=System.currentTimeMillis()
                         ExerciseData.exerciseTime=ExerciseData.exerciseEndTime-ExerciseData.exerciseStartTime
                         ExerciseData.exerciseStartTime=ExerciseData.exerciseEndTime
                         if (ExerciseData.exerciseTime>5000 || ExerciseData.exerciseTime<1000){
-                            ExerciseData.exercise2Counter--
+                            ExerciseData.exerciseCounter--
                         }
                     }
                     updateUp=true
                     updateDown=false
                 }
             }
-            if (angleL>160){
+            if (angleRightEl>160){
                 if (!updateDown) {
                     updateDown=true
                     updateUp=false
@@ -67,15 +68,19 @@ class ExerciseUtils {
             }
         }
 
-        fun trackExercise3(person: Person, exercise3ResultData: Exercise3ResultData):Float{
+        fun trackExercise3(
+            person: Person,
+            exerciseData: Exercise3Data,
+            exercise3ResultData: Exercise3ResultData
+        ):Float{
             val ratioOfRUpperAndLower=RatioTrackerUtils.calculateRatio(person,Pair(0,15),Pair(11,15))
-            if (ratioOfRUpperAndLower<1.85){
+            if (ratioOfRUpperAndLower<exerciseData.minRatioOfRUpperAndLower){
                 if (!updateUp){
                     updateUp=true
                     updateDown=false
                 }
             }
-            if(ratioOfRUpperAndLower>2.05){
+            if(ratioOfRUpperAndLower>exerciseData.maxRatioOfRUpperAndLower){
                 if (!updateDown) {
                     ExerciseData.exerciseCounter++
                     exercise3ResultData.numberOfExercise=ExerciseData.exerciseCounter

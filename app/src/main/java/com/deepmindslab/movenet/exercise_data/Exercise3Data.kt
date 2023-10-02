@@ -15,4 +15,4 @@ data class Exercise3Data (
     val maxRatioOfBodyWrist:Float,
     val minRatioOfElbowAndShoulders:Float,
     val maxRatioOfElbowAndShoulders:Float
-):Serializable
+):Serializable,ExerciseDataInterface
