@@ -3,11 +3,10 @@
     {
       "name": "Exercise 1",
       "data": {
-        "field1": "value1",
-        "field2": "value2",
-        "field3": "value3",
-        "field4": "value4",
-        "field5": "value5"
+        "maxAngleShoulderWristUp": "115",
+        "minAngleShoulderWristUp": "85",
+        "maxAngleShoulderWristDown": "20",
+        "minAngleShoulderWristDown": "8"
       }
     },
     {
@@ -23,7 +22,7 @@
       "name": "Exercise 3",
       "data": {
         "minRatioOfRUpperAndLower": "1.85",
-        "maxRatioOfRUpperAndLower": "2.05",
+        "maxRatioOfRUpperAndLower": "2.00",
 
         "idealRatioOfRUpperAndLower": "2.1",
 

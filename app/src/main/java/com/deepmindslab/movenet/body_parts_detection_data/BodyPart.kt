@@ -1,4 +1,4 @@
-package com.deepmindslab.movenet.data
+package com.deepmindslab.movenet.body_parts_detection_data
 
 enum class BodyPart(val position:Int) {
 

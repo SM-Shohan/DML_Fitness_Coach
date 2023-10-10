@@ -1,7 +1,7 @@
 package com.deepmindslab.movenet.ml
 
 import android.graphics.Bitmap
-import com.deepmindslab.movenet.data.Person
+import com.deepmindslab.movenet.body_parts_detection_data.Person
 
 interface PoseDetector : AutoCloseable {
 

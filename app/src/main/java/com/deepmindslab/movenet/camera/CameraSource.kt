@@ -20,9 +20,9 @@ import com.deepmindslab.movenet.ExerciseResultActivity
 import com.deepmindslab.movenet.MainActivity
 import com.deepmindslab.movenet.VisualizationUtils
 import com.deepmindslab.movenet.YuvToRgbConverter
-import com.deepmindslab.movenet.resultdata.Exercise3ResultData
-import com.deepmindslab.movenet.data.ExerciseData
-import com.deepmindslab.movenet.data.Person
+import com.deepmindslab.movenet.result_data.ExerciseResultData
+import com.deepmindslab.movenet.body_parts_detection_data.Person
+import com.deepmindslab.movenet.exercise.Exercise
 import com.deepmindslab.movenet.exercise_data.ExerciseDataInterface
 import com.deepmindslab.movenet.ml.MoveNetMultiPose
 import com.deepmindslab.movenet.ml.PoseClassifier
@@ -81,7 +81,8 @@ class CameraSource(
 
     suspend fun initCamera(
         exerciseData: ExerciseDataInterface?,
-        exercise3ResultData: Exercise3ResultData,
+        exerciseResultData: ExerciseResultData,
+        exercise: Exercise,
         mainActivity: MainActivity,
         cameraSource: CameraSource
     ) {
@@ -112,7 +113,7 @@ class CameraSource(
                     imageBitmap, 0, 0, PREVIEW_WIDTH, PREVIEW_HEIGHT,
                     rotateMatrix, false
                 )
-                processImage(rotatedBitmap,exerciseData,exercise3ResultData,mainActivity,cameraSource)
+                processImage(rotatedBitmap,exerciseData,exerciseResultData,exercise,mainActivity,cameraSource)
                 image.close()
             }
         }, imageReaderHandler)
@@ -203,11 +204,6 @@ class CameraSource(
         }
 
 
-    fun closeCamera() {
-        cameraDevice?.close() // Close the camera if it was opened
-        cameraDevice = null // Reset the reference
-    }
-
     fun resume() {
         imageReaderThread = HandlerThread("imageReaderThread").apply { start() }
         imageReaderHandler = Handler(imageReaderThread!!.looper)
@@ -225,6 +221,8 @@ class CameraSource(
     }
 
     fun close() {
+        cameraDevice?.close() // Close the camera if it was opened
+        cameraDevice = null
         session?.close()
         session = null
         camera?.close()
@@ -291,7 +289,8 @@ class CameraSource(
     private fun processImage(
         bitmap: Bitmap,
         exerciseData: ExerciseDataInterface?,
-        exercise3ResultData: Exercise3ResultData,
+        exerciseResultData: ExerciseResultData,
+        exercise: Exercise,
         mainActivity: MainActivity,
         cameraSource: CameraSource
     ) {
@@ -322,29 +321,29 @@ class CameraSource(
             listener?.onDetectedInfo(persons[0].score, classificationResult)
         }
 
-        visualize(persons, bitmap, exerciseData,exercise3ResultData,mainActivity,cameraSource)
+        visualize(persons, bitmap, exerciseData,exerciseResultData,exercise,mainActivity,cameraSource)
     }
 
     private fun visualize(
         persons: List<Person>,
         bitmap: Bitmap,
         exerciseData: ExerciseDataInterface?,
-        exercise3ResultData: Exercise3ResultData,
+        exerciseResultData: ExerciseResultData,
+        exercise: Exercise,
         mainActivity: MainActivity,
         cameraSource: CameraSource
     ) {
-        if (ExerciseData.exerciseCounter>=5) {
-            ExerciseData.exerciseCounter=0
-            cameraSource.closeCamera()
+        if (exerciseResultData.numberOfIteration>=5) {
+            cameraSource.close()
             val intent = Intent(mainActivity, ExerciseResultActivity::class.java)
-            intent.putExtra("exercise3ResultData", exercise3ResultData)
+            intent.putExtra("exercise3ResultData", exerciseResultData)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
             mainActivity.startActivity(intent)
         }
 
         val outputBitmap = VisualizationUtils.drawBodyKeyPoints(
             bitmap,
-            persons.filter { it.score > MIN_CONFIDENCE }, isTrackerEnabled,exerciseData,exercise3ResultData
+            persons.filter { it.score > MIN_CONFIDENCE }, isTrackerEnabled,exerciseData,exerciseResultData,exercise
         )
 
         val holder = surfaceView.holder

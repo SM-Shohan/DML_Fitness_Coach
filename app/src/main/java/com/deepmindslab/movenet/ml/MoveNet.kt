@@ -5,7 +5,7 @@ import android.graphics.*
 import android.os.SystemClock
 import org.tensorflow.lite.DataType
 import org.tensorflow.lite.Interpreter
-import com.deepmindslab.movenet.data.*
+import com.deepmindslab.movenet.body_parts_detection_data.*
 import org.tensorflow.lite.gpu.GpuDelegate
 import org.tensorflow.lite.support.common.FileUtil
 import org.tensorflow.lite.support.image.ImageProcessor
