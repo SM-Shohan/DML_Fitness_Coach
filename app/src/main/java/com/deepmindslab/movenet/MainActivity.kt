@@ -4,16 +4,25 @@ import android.Manifest
 import android.app.AlertDialog
 import android.app.Dialog
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.os.Process
 import android.view.SurfaceView
 import androidx.activity.OnBackPressedCallback
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
 import com.deepmindslab.movenet.camera.CameraSource
+import com.deepmindslab.movenet.exercise.Exercise
+import com.deepmindslab.movenet.exercise.Exercise1
+import com.deepmindslab.movenet.exercise.Exercise2
+import com.deepmindslab.movenet.exercise.Exercise3
+import com.deepmindslab.movenet.exercise_data.Exercise1Data
+import com.deepmindslab.movenet.exercise_data.Exercise2Data
+import com.deepmindslab.movenet.exercise_data.Exercise3Data
 import com.deepmindslab.movenet.exercise_data.ExerciseDataInterface
-import com.deepmindslab.movenet.resultdata.Exercise3ResultData
+import com.deepmindslab.movenet.result_data.ExerciseResultData
 import com.deepmindslab.movenet.ml.ModelType
 import com.deepmindslab.movenet.ml.MoveNet
 import com.deepmindslab.movenet.ml.MoveNetMultiPose
@@ -38,24 +47,43 @@ class MainActivity : AppCompatActivity() {
     private var isClassifyPose = false
 
     private var exerciseData: ExerciseDataInterface? = null
+    private var exercise:Exercise?=null
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         surfaceView=findViewById(R.id.surfaceView)
 
-        val receivedIntent = intent
+        if (intent.hasExtra("exercise1Data")) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                exerciseData = intent.getSerializableExtra("exercise1Data", Exercise1Data::class.java) as ExerciseDataInterface
+                exercise=intent.getSerializableExtra("exercise1",Exercise1::class.java)
+            } else {
+                exerciseData = intent.getSerializableExtra("exercise1Data") as ExerciseDataInterface
+                exercise=intent.getSerializableExtra("exercise1") as Exercise1
+            }
 
-        if (intent.hasExtra("exercise2Data")) {
-            exerciseData = intent.getSerializableExtra("exercise2Data") as ExerciseDataInterface
+        }else if (intent.hasExtra("exercise2Data")) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                exerciseData = intent.getSerializableExtra("exercise2Data",Exercise2Data::class.java) as ExerciseDataInterface
+                exercise = intent.getSerializableExtra("exercise2",Exercise2::class.java)
+            }else {
+                exerciseData = intent.getSerializableExtra("exercise2Data") as ExerciseDataInterface
+                exercise = intent.getSerializableExtra("exercise2") as Exercise2
+            }
+        }else if (intent.hasExtra("exercise3Data")) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU){
+                exerciseData = intent.getSerializableExtra("exercise3Data",Exercise3Data::class.java) as ExerciseDataInterface
+                exercise=intent.getSerializableExtra("exercise3",Exercise3::class.java)
+            }else {
+                exerciseData = intent.getSerializableExtra("exercise3Data") as ExerciseDataInterface
+                exercise = intent.getSerializableExtra("exercise3") as Exercise3
+            }
         }
 
-        if (intent.hasExtra("exercise3Data")) {
-            exerciseData = intent.getSerializableExtra("exercise3Data") as ExerciseDataInterface
-        }
-
-        if (exerciseData!=null){
-            openCamera(exerciseData)
+        if (exerciseData!=null && exercise != null){
+            openCamera(exerciseData, exercise!!)
         }
 
 
@@ -63,17 +91,23 @@ class MainActivity : AppCompatActivity() {
         val onBackPressedDispatcher = this.onBackPressedDispatcher
         val onBackPressedCallback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                cameraSource?.closeCamera()
-
-                this@MainActivity.finish()
+                cameraSource?.close()
+                finish()
             }
         }
-        cameraSource?.setTracker(TrackerType.OFF)
         onBackPressedDispatcher.addCallback(onBackPressedCallback)
     }
 
 
+    override fun onDestroy() {
+        cameraSource?.close()
+        super.onDestroy()
+    }
 
+    override fun onResume() {
+        cameraSource?.resume()
+        super.onResume()
+    }
 
     private fun isCameraPermissionGranted(): Boolean {
         return checkPermission(
@@ -83,8 +117,8 @@ class MainActivity : AppCompatActivity() {
         ) == PackageManager.PERMISSION_GRANTED
     }
 
-    private fun openCamera(exerciseData: ExerciseDataInterface?) {
-        val exercise3ResultData= Exercise3ResultData()
+    private fun openCamera(exerciseData: ExerciseDataInterface?, exercise: Exercise) {
+        val exerciseResultData= ExerciseResultData()
 
         if (isCameraPermissionGranted()) {
             if (cameraSource == null) {
@@ -107,7 +141,7 @@ class MainActivity : AppCompatActivity() {
                     }
                 isPoseClassifier()
                 lifecycleScope.launch(Dispatchers.Main) {
-                    cameraSource?.initCamera(exerciseData, exercise3ResultData,this@MainActivity,
+                    cameraSource?.initCamera(exerciseData, exerciseResultData, exercise,this@MainActivity,
                         cameraSource!!
                     )
                 }

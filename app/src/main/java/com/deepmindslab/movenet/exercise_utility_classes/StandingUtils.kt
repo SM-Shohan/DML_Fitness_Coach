@@ -1,6 +1,6 @@
-package com.deepmindslab.movenet.standing
+package com.deepmindslab.movenet.exercise_utility_classes
 
-import com.deepmindslab.movenet.data.Person
+import com.deepmindslab.movenet.body_parts_detection_data.Person
 
 class StandingUtils {
 
@@ -26,32 +26,32 @@ class StandingUtils {
                 countBack++
             }
 
-            if (countLeft>20){
+            if (countLeft >20){
                 countLeft--
-                countRight=0
-                countBack=0
-                countFront=0
+                countRight =0
+                countBack =0
+                countFront =0
                 return 1
             }
-            else if (countRight>20){
+            else if (countRight >20){
                 countRight--
-                countLeft=0
-                countBack=0
-                countFront=0
+                countLeft =0
+                countBack =0
+                countFront =0
                 return 2
             }
-            else if (countFront>20){
+            else if (countFront >20){
                 countFront--
-                countLeft=0
-                countBack=0
-                countRight=0
+                countLeft =0
+                countBack =0
+                countRight =0
                 return 3
             }
-            else if (countBack>20){
+            else if (countBack >20){
                 countBack--
-                countLeft=0
-                countFront=0
-                countRight=0
+                countLeft =0
+                countFront =0
+                countRight =0
                 return 4
             }
             return -1

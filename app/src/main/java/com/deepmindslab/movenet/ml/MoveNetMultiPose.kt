@@ -5,9 +5,9 @@ import android.graphics.Bitmap
 import android.graphics.PointF
 import android.graphics.RectF
 import android.os.SystemClock
-import com.deepmindslab.movenet.data.BodyPart
-import com.deepmindslab.movenet.data.KeyPoint
-import com.deepmindslab.movenet.data.Person
+import com.deepmindslab.movenet.body_parts_detection_data.BodyPart
+import com.deepmindslab.movenet.body_parts_detection_data.KeyPoint
+import com.deepmindslab.movenet.body_parts_detection_data.Person
 import com.deepmindslab.movenet.tracker.*
 import org.tensorflow.lite.DataType
 import org.tensorflow.lite.Interpreter

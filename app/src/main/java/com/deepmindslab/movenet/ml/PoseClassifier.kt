@@ -1,7 +1,7 @@
 package com.deepmindslab.movenet.ml
 
 import android.content.Context
-import com.deepmindslab.movenet.data.Person
+import com.deepmindslab.movenet.body_parts_detection_data.Person
 import org.tensorflow.lite.Interpreter
 import org.tensorflow.lite.support.common.FileUtil
 

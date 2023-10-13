@@ -1,6 +1,6 @@
-package com.deepmindslab.movenet.ratio
+package com.deepmindslab.movenet.exercise_utility_classes
 
-import com.deepmindslab.movenet.data.Person
+import com.deepmindslab.movenet.body_parts_detection_data.Person
 import kotlin.math.sqrt
 
 class RatioTrackerUtils {

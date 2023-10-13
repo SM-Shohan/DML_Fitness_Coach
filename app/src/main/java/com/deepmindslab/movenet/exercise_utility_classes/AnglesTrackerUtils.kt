@@ -1,7 +1,7 @@
-package com.deepmindslab.movenet.angle
+package com.deepmindslab.movenet.exercise_utility_classes
 
 import android.graphics.PointF
-import com.deepmindslab.movenet.data.Person
+import com.deepmindslab.movenet.body_parts_detection_data.Person
 import kotlin.math.atan2
 
 class AnglesTrackerUtils {
