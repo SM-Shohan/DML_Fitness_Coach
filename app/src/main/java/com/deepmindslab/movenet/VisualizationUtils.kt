@@ -9,6 +9,9 @@ import android.graphics.Path
 import android.graphics.PointF
 import android.graphics.RectF
 import android.graphics.Typeface
+import android.widget.Toast
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import com.deepmindslab.movenet.exercise_utility_classes.AnglesTrackerUtils
 import com.deepmindslab.movenet.body_parts_detection_data.BodyPart
 import com.deepmindslab.movenet.result_data.ExerciseResultData
@@ -181,6 +184,7 @@ object VisualizationUtils {
         canvas.drawPath(path, paintSector)
     }
 
+
     // Draw line and point indicate body pose
     fun drawBodyKeyPoints(
         input: Bitmap,
@@ -189,8 +193,9 @@ object VisualizationUtils {
         exerciseData: ExerciseDataInterface?,
         exerciseResultData: ExerciseResultData,
         exercise: Exercise,
-    ): Bitmap {
+    ): LiveData<Bitmap> {
 
+        val outputLiveData = MutableLiveData<Bitmap>()
         val sortPersons = persons.sortedBy { it.keyPoints.firstOrNull()?.coordinate?.x ?: 0f }
 
         val paintSector = Paint().apply {
@@ -323,6 +328,7 @@ object VisualizationUtils {
                 drawLine(originalSizeCanvas,person,false)
             }
         }
-        return output
+        outputLiveData.value = output
+        return outputLiveData
     }
 }

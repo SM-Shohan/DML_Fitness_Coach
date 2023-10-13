@@ -4,14 +4,16 @@ import android.Manifest
 import android.app.AlertDialog
 import android.app.Dialog
 import android.content.pm.PackageManager
+import android.graphics.Rect
 import android.os.Build
 import android.os.Bundle
 import android.os.Process
 import android.view.SurfaceView
+import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.DialogFragment
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.deepmindslab.movenet.camera.CameraSource
 import com.deepmindslab.movenet.exercise.Exercise
@@ -22,12 +24,10 @@ import com.deepmindslab.movenet.exercise_data.Exercise1Data
 import com.deepmindslab.movenet.exercise_data.Exercise2Data
 import com.deepmindslab.movenet.exercise_data.Exercise3Data
 import com.deepmindslab.movenet.exercise_data.ExerciseDataInterface
-import com.deepmindslab.movenet.result_data.ExerciseResultData
 import com.deepmindslab.movenet.ml.ModelType
 import com.deepmindslab.movenet.ml.MoveNet
 import com.deepmindslab.movenet.ml.MoveNetMultiPose
 import com.deepmindslab.movenet.ml.PoseClassifier
-import com.deepmindslab.movenet.ml.TrackerType
 import com.deepmindslab.movenet.ml.Type
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -44,16 +44,20 @@ class MainActivity : AppCompatActivity() {
 
 
     private var cameraSource: CameraSource? = null
-    private var isClassifyPose = false
 
     private var exerciseData: ExerciseDataInterface? = null
     private var exercise:Exercise?=null
+
+    private val viewModel: ImageProcessingViewModel by lazy {
+        ViewModelProvider(this, ImageProcessingViewModelFactory(application)).get(ImageProcessingViewModel::class.java)
+    }
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         surfaceView=findViewById(R.id.surfaceView)
+
 
         if (intent.hasExtra("exercise1Data")) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -82,11 +86,42 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        if (exerciseData!=null && exercise != null){
-            openCamera(exerciseData, exercise!!)
+        lifecycleScope.launch(Dispatchers.Main) {
+            Toast.makeText(this@MainActivity, "Not Null", Toast.LENGTH_SHORT).show()
+            viewModel.openCamera(exerciseData, exercise!!)?.observe(this@MainActivity) { processedImage ->
+                val holder = surfaceView.holder
+                val surfaceCanvas = holder.lockCanvas()
+                surfaceCanvas?.let { canvas ->
+                    val screenWidth: Int
+                    val screenHeight: Int
+                    val left: Int
+                    val top: Int
+
+                    if (canvas.height > canvas.width) {
+                        val ratio = processedImage.height.toFloat() / processedImage.width
+                        screenWidth = canvas.width
+                        left = 0
+                        screenHeight = (canvas.width * ratio).toInt()
+                        top = (canvas.height - screenHeight) / 2
+                    } else {
+                        val ratio = processedImage.width.toFloat() / processedImage.height
+                        screenHeight = canvas.height
+                        top = 0
+                        screenWidth = (canvas.height * ratio).toInt()
+                        left = (canvas.width - screenWidth) / 2
+                    }
+                    val right: Int = left + screenWidth
+                    val bottom: Int = top + screenHeight
+
+                    canvas.drawBitmap(
+                        processedImage, Rect(0, 0, processedImage.width, processedImage.height),
+                        Rect(left, top, right, bottom), null
+                    )
+                    surfaceView.holder.unlockCanvasAndPost(canvas)
+                }
+            }
+
         }
-
-
 
         val onBackPressedDispatcher = this.onBackPressedDispatcher
         val onBackPressedCallback = object : OnBackPressedCallback(true) {
@@ -117,39 +152,6 @@ class MainActivity : AppCompatActivity() {
         ) == PackageManager.PERMISSION_GRANTED
     }
 
-    private fun openCamera(exerciseData: ExerciseDataInterface?, exercise: Exercise) {
-        val exerciseResultData= ExerciseResultData()
-
-        if (isCameraPermissionGranted()) {
-            if (cameraSource == null) {
-                cameraSource = CameraSource(surfaceView, object : CameraSource.CameraSourceListener {
-                        override fun onFPSListener(fps: Int) {
-                            //tvFPS.text = getString(R.string.tfe_pe_tv_fps, fps)
-                        }
-
-                        override fun onDetectedInfo(
-                            personScore: Float?,
-                            poseLabels: List<Pair<String, Float>>?
-                        ) {
-                            poseLabels?.sortedByDescending { it.second }?.let {
-
-                            }
-                        }
-
-                    }).apply {
-                        prepareCamera()
-                    }
-                isPoseClassifier()
-                lifecycleScope.launch(Dispatchers.Main) {
-                    cameraSource?.initCamera(exerciseData, exerciseResultData, exercise,this@MainActivity,
-                        cameraSource!!
-                    )
-                }
-            }
-            createPoseEstimator()
-        }
-    }
-
 
     private fun createPoseEstimator() {
 
@@ -177,10 +179,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-
-    private fun isPoseClassifier() {
-        cameraSource?.setClassifier(if (isClassifyPose) PoseClassifier.create(this) else null)
-    }
 
     class ErrorDialog : DialogFragment() {
 
