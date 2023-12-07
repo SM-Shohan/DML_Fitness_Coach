@@ -1,4 +1,4 @@
-package com.deepmindslab.movenet.result_data
+package com.deepmindslab.movenet.data.result_data
 
 import java.io.Serializable
 

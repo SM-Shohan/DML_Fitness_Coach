@@ -5,7 +5,7 @@ import com.deepmindslab.movenet.exercise_data.Exercise1Data
 import com.deepmindslab.movenet.exercise_data.ExerciseDataInterface
 import com.deepmindslab.movenet.exercise_utility_classes.AnglesTrackerUtils
 import com.deepmindslab.movenet.exercise_utility_classes.StandingUtils
-import com.deepmindslab.movenet.result_data.ExerciseResultData
+import com.deepmindslab.movenet.data.result_data.ExerciseResultData
 import java.io.Serializable
 
 class Exercise1:Exercise,Serializable {

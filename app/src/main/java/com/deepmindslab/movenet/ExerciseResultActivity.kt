@@ -3,7 +3,7 @@ package com.deepmindslab.movenet
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.TextView
-import com.deepmindslab.movenet.result_data.ExerciseResultData
+import com.deepmindslab.movenet.data.result_data.ExerciseResultData
 
 class ExerciseResultActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

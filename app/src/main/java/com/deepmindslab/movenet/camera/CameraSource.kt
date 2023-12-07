@@ -13,10 +13,10 @@ import android.media.ImageReader
 import android.os.Handler
 import android.os.HandlerThread
 import android.view.Surface
-import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import com.deepmindslab.movenet.VisualizationUtils
 import com.deepmindslab.movenet.YuvToRgbConverter
-import com.deepmindslab.movenet.result_data.ExerciseResultData
+import com.deepmindslab.movenet.data.result_data.ExerciseResultData
 import com.deepmindslab.movenet.body_parts_detection_data.Person
 import com.deepmindslab.movenet.exercise.Exercise
 import com.deepmindslab.movenet.exercise_data.ExerciseDataInterface
@@ -31,7 +31,8 @@ import kotlin.coroutines.resumeWithException
 
 class CameraSource(
     context: Context,
-    private val listener: CameraSourceListener? = null
+    private val listener: CameraSourceListener? = null,
+    private val bitmapLiveData: MutableLiveData<Bitmap>
 ) {
 
     companion object {
@@ -41,7 +42,6 @@ class CameraSource(
         /** Threshold for confidence score. */
         private const val MIN_CONFIDENCE = .2f
     }
-
     private val lock = Any()
     private var detector: PoseDetector? = null
     private var classifier: PoseClassifier? = null
@@ -78,8 +78,7 @@ class CameraSource(
         exerciseData: ExerciseDataInterface?,
         exerciseResultData: ExerciseResultData,
         exercise: Exercise,
-    ): LiveData<Bitmap>? {
-        var bitmapLiveData:LiveData<Bitmap>?=null
+    ) {
         //camera = openCamera(cameraManager, cameraId)
         camera= openFrontCamera(cameraManager)
 
@@ -107,7 +106,8 @@ class CameraSource(
                     imageBitmap, 0, 0, PREVIEW_WIDTH, PREVIEW_HEIGHT,
                     rotateMatrix, false
                 )
-                bitmapLiveData=processImage(rotatedBitmap,exerciseData,exerciseResultData,exercise)
+
+                processImage(rotatedBitmap,exerciseData,exerciseResultData,exercise)
                 image.close()
             }
         }, imageReaderHandler)
@@ -123,7 +123,6 @@ class CameraSource(
                 session?.setRepeatingRequest(it, null, null)
             }
         }
-        return bitmapLiveData
     }
 
     private suspend fun createSession(targets: List<Surface>): CameraCaptureSession =
@@ -286,7 +285,7 @@ class CameraSource(
         exerciseData: ExerciseDataInterface?,
         exerciseResultData: ExerciseResultData,
         exercise: Exercise,
-    ) : LiveData<Bitmap>{
+    ) {
         val persons = mutableListOf<Person>()
         var classificationResult: List<Pair<String, Float>>? = null
 
@@ -313,8 +312,7 @@ class CameraSource(
         if (persons.isNotEmpty()) {
             listener?.onDetectedInfo(persons[0].score, classificationResult)
         }
-
-        return visualize(persons, bitmap, exerciseData,exerciseResultData,exercise)
+        visualize(persons, bitmap, exerciseData,exerciseResultData,exercise)
     }
 
     private fun visualize(
@@ -323,16 +321,9 @@ class CameraSource(
         exerciseData: ExerciseDataInterface?,
         exerciseResultData: ExerciseResultData,
         exercise: Exercise,
-    ): LiveData<Bitmap> {
-        /*if (exerciseResultData.numberOfIteration>=5) {
-            cameraSource.close()
-            val intent = Intent(mainActivity, ExerciseResultActivity::class.java)
-            intent.putExtra("exercise3ResultData", exerciseResultData)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            mainActivity.startActivity(intent)
-        }*/
+    ) {
 
-        return VisualizationUtils.drawBodyKeyPoints(
+        bitmapLiveData.value=VisualizationUtils.drawBodyKeyPoints(
             bitmap,
             persons.filter { it.score > MIN_CONFIDENCE },
             isTrackerEnabled,
@@ -341,36 +332,6 @@ class CameraSource(
             exercise
         )
 
-        /*val holder = surfaceView.holder
-        val surfaceCanvas = holder.lockCanvas()
-        surfaceCanvas?.let { canvas ->
-            val screenWidth: Int
-            val screenHeight: Int
-            val left: Int
-            val top: Int
-
-            if (canvas.height > canvas.width) {
-                val ratio = bitmapLiveData.value!!.height.toFloat() / bitmapLiveData.value!!.width
-                screenWidth = canvas.width
-                left = 0
-                screenHeight = (canvas.width * ratio).toInt()
-                top = (canvas.height - screenHeight) / 2
-            } else {
-                val ratio = bitmapLiveData.value!!.width.toFloat() / bitmapLiveData.value!!.height
-                screenHeight = canvas.height
-                top = 0
-                screenWidth = (canvas.height * ratio).toInt()
-                left = (canvas.width - screenWidth) / 2
-            }
-            val right: Int = left + screenWidth
-            val bottom: Int = top + screenHeight
-
-            canvas.drawBitmap(
-                bitmapLiveData.value!!, Rect(0, 0, bitmapLiveData.value!!.width, bitmapLiveData.value!!.height),
-                Rect(left, top, right, bottom), null
-            )
-            surfaceView.holder.unlockCanvasAndPost(canvas)
-        }*/
     }
 
     private fun stopImageReaderThread() {

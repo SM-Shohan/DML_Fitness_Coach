@@ -50,7 +50,7 @@ class SelectExerciseActivity : AppCompatActivity() {
                 exercise1JsonData.getString("maxAngleShoulderWristDown").toFloat(),
                 exercise1JsonData.getString("minAngleShoulderWristDown").toFloat()
             )
-            val intent = Intent(this,MainActivity::class.java)
+            val intent = Intent(this,ImageProcessingActivity::class.java)
             intent.putExtra("exercise1Data",exercise1Data)
             intent.putExtra("exercise1",exercise1)
             startActivity(intent)
@@ -66,7 +66,7 @@ class SelectExerciseActivity : AppCompatActivity() {
                 exercise2JsonData.getString("minFreqInMs").toFloat(),
                 exercise2JsonData.getString("maxFreqInMs").toFloat()
             )
-            val intent=Intent(this,MainActivity::class.java)
+            val intent=Intent(this,ImageProcessingActivity::class.java)
             intent.putExtra("exercise2Data",exercise2Data)
             intent.putExtra("exercise2",exercise2)
             startActivity(intent)
@@ -88,7 +88,7 @@ class SelectExerciseActivity : AppCompatActivity() {
                 exercise3JsonData.getString("maxRatioOfElbowAndShoulders").toFloat()
             )
 
-            val intent=Intent(this,MainActivity::class.java)
+            val intent=Intent(this,ImageProcessingActivity::class.java)
             intent.putExtra("exercise3Data", exercise3Data)
             intent.putExtra("exercise3",exercise3)
             startActivity(intent)

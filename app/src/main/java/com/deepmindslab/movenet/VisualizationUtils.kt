@@ -9,18 +9,15 @@ import android.graphics.Path
 import android.graphics.PointF
 import android.graphics.RectF
 import android.graphics.Typeface
-import android.widget.Toast
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import com.deepmindslab.movenet.exercise_utility_classes.AnglesTrackerUtils
 import com.deepmindslab.movenet.body_parts_detection_data.BodyPart
-import com.deepmindslab.movenet.result_data.ExerciseResultData
 import com.deepmindslab.movenet.body_parts_detection_data.Person
 import com.deepmindslab.movenet.exercise.Exercise
 import com.deepmindslab.movenet.exercise_data.Exercise1Data
 import com.deepmindslab.movenet.exercise_data.Exercise2Data
 import com.deepmindslab.movenet.exercise_data.Exercise3Data
 import com.deepmindslab.movenet.exercise_data.ExerciseDataInterface
+import com.deepmindslab.movenet.exercise_utility_classes.AnglesTrackerUtils
+import com.deepmindslab.movenet.data.result_data.ExerciseResultData
 import kotlin.math.max
 
 object VisualizationUtils {
@@ -193,9 +190,8 @@ object VisualizationUtils {
         exerciseData: ExerciseDataInterface?,
         exerciseResultData: ExerciseResultData,
         exercise: Exercise,
-    ): LiveData<Bitmap> {
+    ): Bitmap {
 
-        val outputLiveData = MutableLiveData<Bitmap>()
         val sortPersons = persons.sortedBy { it.keyPoints.firstOrNull()?.coordinate?.x ?: 0f }
 
         val paintSector = Paint().apply {
@@ -328,7 +324,6 @@ object VisualizationUtils {
                 drawLine(originalSizeCanvas,person,false)
             }
         }
-        outputLiveData.value = output
-        return outputLiveData
+        return output
     }
 }

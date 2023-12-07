@@ -3,6 +3,7 @@ package com.deepmindslab.movenet
 import android.app.Application
 import android.graphics.Bitmap
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.deepmindslab.movenet.camera.CameraSource
 import com.deepmindslab.movenet.exercise.Exercise
@@ -12,7 +13,7 @@ import com.deepmindslab.movenet.ml.MoveNet
 import com.deepmindslab.movenet.ml.MoveNetMultiPose
 import com.deepmindslab.movenet.ml.PoseClassifier
 import com.deepmindslab.movenet.ml.Type
-import com.deepmindslab.movenet.result_data.ExerciseResultData
+import com.deepmindslab.movenet.data.result_data.ExerciseResultData
 
 class ImageProcessingViewModel(application: Application) : ViewModel() {
 
@@ -20,10 +21,11 @@ class ImageProcessingViewModel(application: Application) : ViewModel() {
     private var cameraSource: CameraSource? = null
     private var modelPos = 2
     private var isClassifyPose = false
+    private var bitmapLiveData = MutableLiveData<Bitmap>()
 
 
 
-    suspend fun openCamera(exerciseData: ExerciseDataInterface?, exercise: Exercise): LiveData<Bitmap>? {
+    suspend fun openCamera(exerciseData: ExerciseDataInterface?, exercise: Exercise) {
         val exerciseResultData= ExerciseResultData()
 
         if (cameraSource == null) {
@@ -41,15 +43,19 @@ class ImageProcessingViewModel(application: Application) : ViewModel() {
                     }
                 }
 
-            }).apply {
+            },bitmapLiveData).apply {
                 prepareCamera()
             }
             isPoseClassifier()
-            return cameraSource?.initCamera(exerciseData, exerciseResultData, exercise)
+            cameraSource?.initCamera(exerciseData, exerciseResultData, exercise)
 
         }
         createPoseEstimator()
-        return null
+    }
+
+    fun getLiveData(): LiveData<Bitmap>
+    {
+        return bitmapLiveData
     }
 
 
@@ -82,4 +88,14 @@ class ImageProcessingViewModel(application: Application) : ViewModel() {
     private fun isPoseClassifier() {
         cameraSource?.setClassifier(if (isClassifyPose) PoseClassifier.create(applicationVm.applicationContext) else null)
     }
+
+    fun closeCamera()
+    {
+        cameraSource?.close()
+    }
+    fun resumeCamera()
+    {
+        cameraSource?.resume()
+    }
+
 }
